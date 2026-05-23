@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LOCKED IN">
+<meta name="description" content="Stay disciplined. Stay consistent.">
+<title>LOCKED IN</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #2a2a2a;
+    --accent: #c8f538;
+    --accent-dim: #8db32a;
+    --text: #f0f0f0;
+    --text-muted: #888;
+    --text-dim: #555;
+    --danger: #ff4444;
+    --gold: #f5c518;
+    --blue: #4a9eff;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, .logo { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: block; }
+
+  /* AUTH */
+  #auth-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at top, #0f1a00 0%, var(--bg) 60%);
+  }
+  #auth-screen.active { display: flex; }
+
+  .auth-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 4.5rem;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+    line-height: 1;
+    letter-spacing: 0.05em;
+  }
+  .auth-tagline {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .auth-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 100%;
+    max-width: 380px;
+  }
+  .auth-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 1.5rem;
+    gap: 4px;
+  }
+  .auth-tab {
+    padding: 0.5rem;
+    text-align: center;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    border: none;
+    background: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .auth-tab.active { background: var(--accent); color: #000; font-weight: 700; }
+
+  .form-group { margin-bottom: 1rem; }
+  .form-group label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.4rem;
+    font-family: 'Space Mono', monospace;
+  }
+  .form-group input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .form-group input:focus { border-color: var(--accent); }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.08em;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .auth-error {
+    color: var(--danger);
+    font-size: 0.78rem;
+    margin-top: 0.75rem;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    min-height: 1.2em;
+  }
+
+  /* MAIN APP */
+  #app-screen { display: none; padding-bottom: 80px; }
+  #app-screen.active { display: block; }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(10,10,10,0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+  }
+  .header-user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .header-user:hover { background: var(--surface2); }
+  .avatar {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem; color: #000;
+    font-family: 'Space Mono', monospace;
+    flex-shrink: 0;
+  }
+  .logout-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* STREAK HERO */
+  .streak-hero {
+    background: linear-gradient(135deg, var(--surface) 0%, #0c1500 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .streak-left { display: flex; flex-direction: column; gap: 0.2rem; }
+  .streak-main { display: flex; align-items: baseline; gap: 0.6rem; }
+  .streak-number {
+    font-size: 3.8rem;
+    color: var(--accent);
+    font-family: 'Bebas Neue', sans-serif;
+    line-height: 1;
+  }
+  .streak-label-stack { display: flex; flex-direction: column; }
+  .streak-label-top {
+    color: var(--accent);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+  }
+  .streak-label-bot {
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: 'Space Mono', monospace;
+  }
+  .longest-streak {
+    font-size: 0.7rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-dim);
+  }
+  .streak-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.6rem; }
+  .streak-fire { font-size: 2.2rem; }
+  .freeze-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.7rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--blue);
+    display: flex; align-items: center; gap: 0.35rem;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    user-select: none;
+  }
+  .freeze-badge:hover { border-color: var(--blue); }
+
+  /* DATE BAR */
+  .date-bar {
+    padding: 0.7rem 1.25rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg);
+  }
+  .date-badge {
+    background: var(--accent);
+    color: #000;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-weight: 700;
+    font-size: 0.68rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* PROGRESS / REWARDS BAR */
+  .rewards-bar {
+    margin: 1rem 1.25rem 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1rem 0.85rem;
+  }
+  .rewards-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.65rem;
+  }
+  .rewards-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .next-reward-text {
+    font-size: 0.68rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--gold);
+  }
+  .progress-track {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 5px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+  }
+  .milestone-row {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.7rem;
+    flex-wrap: wrap;
+  }
+  .milestone-pill {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.62rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+  .milestone-pill.unlocked { border-color: var(--gold); color: var(--gold); }
+  .milestone-pill.is-next { border-color: var(--accent-dim); color: var(--accent-dim); }
+
+  /* SECTION */
+  .section { padding: 1.1rem 1.25rem; }
+  .section-title {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 0.75rem;
+  }
+
+  /* TASK CARDS */
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 0.55rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .task-card.done { border-color: #2a3d00; }
+  .task-card.frozen { border-color: #003366; }
+
+  .task-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .task-check {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    color: transparent;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .task-card.done .task-check { background: var(--accent); border-color: var(--accent); color: #000; }
+  .task-card.frozen .task-check { background: #0a3d6b; border-color: var(--blue); color: var(--blue); }
+
+  .task-info { flex: 1; min-width: 0; }
+  .task-name {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .task-card.done .task-name { color: var(--text-dim); text-decoration: line-through; }
+  .task-card.frozen .task-name { color: var(--blue); }
+
+  .task-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+  }
+  .pill {
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 0.62rem;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+  }
+  .pill-streak { background: rgba(200,245,56,0.1); color: var(--accent); }
+  .pill-freq { background: var(--surface2); color: var(--text-dim); font-weight: 400; }
+  .pill-frozen { background: rgba(74,158,255,0.1); color: var(--blue); }
+
+  .task-actions {
+    display: flex;
+    gap: 0.3rem;
+    padding: 0 1rem 0.7rem;
+  }
+  .task-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .task-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .task-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* NOTE DRAWER */
+  .note-drawer {
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: none;
+  }
+  .note-drawer.open { display: block; }
+  .note-display {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    font-style: italic;
+    margin-bottom: 0.5rem;
+    border-left: 2px solid var(--accent);
+    padding-left: 0.6rem;
+  }
+  .note-textarea {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.55rem 0.75rem;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-family: 'Inter', sans-serif;
+    resize: vertical;
+    outline: none;
+    min-height: 65px;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .note-textarea:focus { border-color: var(--accent); }
+  .note-save-btn {
+    margin-top: 0.4rem;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4rem 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    transition: opacity 0.2s;
+  }
+  .note-save-btn:hover { opacity: 0.85; }
+
+  /* ADD TASK BTN */
+  .add-task-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .add-task-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MODALS */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.82);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  @media (min-width: 500px) {
+    .modal-overlay { align-items: center; padding: 1rem; }
+    .modal { border-radius: var(--radius) !important; }
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 440px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 1.25rem;
+  }
+  .modal-title {
+    font-size: 1.4rem;
+    color: var(--accent);
+    margin-bottom: 1.25rem;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.06em;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+  .btn-cancel {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+  }
+  .btn-cancel:hover { background: #222; }
+  .btn-save {
+    flex: 2;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    transition: opacity 0.2s;
+  }
+  .btn-save:hover { opacity: 0.88; }
+
+  /* FREQUENCY GRID */
+  .freq-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+  }
+  .freq-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 0.2rem;
+    text-align: center;
+    font-size: 0.65rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    transition: all 0.2s;
+    -webkit-tap-highlight-color: transparent;
+    line-height: 1.3;
+  }
+  .freq-btn.selected {
+    background: rgba(200,245,56,0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* BOTTOM NAV */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10,10,10,0.98);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.6rem 0 0.55rem;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 0.58rem;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: none;
+    background: none;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nav-item.active { color: var(--accent); }
+  .nav-icon { font-size: 1.1rem; line-height: 1; }
+
+  /* TAB PANELS */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* REWARDS TAB */
+  .rewards-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    padding: 0 1.25rem 1.25rem;
+  }
+  .reward-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .reward-card.unlocked { border-color: var(--gold); background: rgba(245,197,24,0.04); }
+  .reward-icon { font-size: 2rem; margin-bottom: 0.4rem; }
+  .reward-name { font-family: 'Space Mono', monospace; font-size: 0.65rem; color: var(--text-muted); line-height: 1.4; }
+  .reward-req { font-size: 0.68rem; margin-top: 0.3rem; color: var(--text-dim); }
+  .reward-card.unlocked .reward-req { color: var(--gold); }
+  .reward-bonus { font-size: 0.6rem; color: var(--text-dim); margin-top: 0.2rem; }
+  .reward-card.unlocked .reward-bonus { color: rgba(245,197,24,0.7); }
+
+  /* SETTINGS TAB */
+  .settings-task-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .settings-task-item:last-child { border-bottom: none; }
+  .settings-task-info { flex: 1; min-width: 0; }
+  .settings-task-name {
+    font-size: 0.88rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .settings-task-freq {
+    font-size: 0.68rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-dim);
+    margin-top: 0.15rem;
+  }
+
+  /* FREEZE MODAL */
+  .freeze-task-list { margin-bottom: 0.5rem; }
+  .freeze-task-radio {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 0.88rem;
+  }
+  .freeze-task-radio:last-child { border-bottom: none; }
+  .freeze-task-radio input[type="radio"] { accent-color: var(--blue); width: 16px; height: 16px; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 2.2;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%) translateY(12px);
+    background: var(--accent);
+    color: #000;
+    padding: 0.6rem 1.4rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    opacity: 0;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 200;
+    white-space: nowrap;
+    pointer-events: none;
+    max-width: calc(100vw - 2rem);
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* INFO BOX */
+  .info-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.9;
+    font-family: 'Space Mono', monospace;
+    margin: 0 1.25rem 1.25rem;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+<div id="auth-screen" class="screen active">
+  <div class="auth-logo">LOCKED IN</div>
+  <div class="auth-tagline">stay disciplined. stay consistent.</div>
+
+  <div class="auth-box">
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Inloggen</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Registreren</button>
+    </div>
+
+    <div id="login-form">
+      <div class="form-group">
+        <label>Gebruikersnaam</label>
+        <input type="text" id="login-user" placeholder="jouw naam" autocomplete="username" autocorrect="off" autocapitalize="none">
+      </div>
+      <div class="form-group">
+        <label>Wachtwoord</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">INLOGGEN</button>
+    </div>
+
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label>Gebruikersnaam</label>
+        <input type="text" id="reg-user" placeholder="kies een naam" autocomplete="username" autocorrect="off" autocapitalize="none">
+      </div>
+      <div class="form-group">
+        <label>Wachtwoord</label>
+        <input type="password" id="reg-pass" placeholder="min. 4 tekens" autocomplete="new-password">
+      </div>
+      <button class="btn-primary" onclick="doRegister()">ACCOUNT AANMAKEN</button>
+    </div>
+
+    <div class="auth-error" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ MAIN APP ═══════════════ -->
+<div id="app-screen" class="screen">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">LOCKED IN</div>
+    <div class="header-user" onclick="doLogout()" title="Uitloggen">
+      <div class="avatar" id="user-avatar">?</div>
+      <span class="logout-label" id="user-name-label">logout</span>
+    </div>
+  </div>
+
+  <!-- TODAY TAB -->
+  <div id="tab-today" class="tab-panel active">
+    <!-- Streak hero -->
+    <div class="streak-hero">
+      <div class="streak-left">
+        <div class="streak-main">
+          <div class="streak-number" id="overall-streak">0</div>
+          <div class="streak-label-stack">
+            <div class="streak-label-top">dag streak</div>
+            <div class="streak-label-bot">perfecte dagen</div>
+          </div>
+        </div>
+        <div class="longest-streak" id="longest-streak-label">best: 0 dagen</div>
+      </div>
+      <div class="streak-right">
+        <div class="streak-fire">🔥</div>
+        <div class="freeze-badge" onclick="openFreezeModal()">
+          ❄️ <span id="freeze-count">0</span> freeze
+        </div>
+      </div>
+    </div>
+
+    <!-- Date bar -->
+    <div class="date-bar">
+      <span id="today-date-label" class="mono"></span>
+      <span class="date-badge" id="tasks-done-count">0/0 klaar</span>
+    </div>
+
+    <!-- Progress -->
+    <div class="rewards-bar">
+      <div class="rewards-header">
+        <span class="rewards-title">⚡ voortgang</span>
+        <span class="next-reward-text" id="next-reward-text"></span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="milestone-row" id="milestones-row"></div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="section">
+      <div class="section-title">taken van vandaag</div>
+      <div id="tasks-container"></div>
+      <button class="add-task-btn" onclick="openAddTask()">
+        <span style="font-size:1.2rem;line-height:1">+</span>
+        Nieuwe taak toevoegen
+      </button>
+    </div>
+  </div>
+
+  <!-- REWARDS TAB -->
+  <div id="tab-rewards" class="tab-panel">
+    <div style="padding:1.25rem 1.25rem 0.75rem">
+      <div class="section-title">🏆 beloningen</div>
+    </div>
+    <div class="rewards-grid-2" id="rewards-grid"></div>
+    <div style="padding:0 1.25rem 0.75rem">
+      <div class="section-title">ℹ️ hoe werkt het?</div>
+    </div>
+    <div class="info-box">
+      — Elke taak heeft een eigen streak<br>
+      — Perfecte dag = alle taken van die dag gedaan<br>
+      — Als je een taak mist reset je streak (per taak)<br>
+      — Globale streak = alle dagen op rij perfect<br>
+      — Streak freeze beschermt één gemiste taak<br>
+      — Verdien freezes bij mijlpalen (7, 10, 21 … dagen)
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" class="tab-panel">
+    <div style="padding:1.25rem 1.25rem 0.75rem">
+      <div class="section-title">⚙️ al je taken</div>
+    </div>
+    <div style="margin:0 1.25rem 0.75rem;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <div id="settings-tasks-list"></div>
+    </div>
+    <div style="padding:0 1.25rem">
+      <button class="add-task-btn" onclick="openAddTask()">
+        <span style="font-size:1.2rem;line-height:1">+</span>
+        Taak toevoegen
+      </button>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-today" onclick="switchTab('today', this)">
+      <span class="nav-icon">✓</span>Vandaag
+    </button>
+    <button class="nav-item" id="nav-rewards" onclick="switchTab('rewards', this)">
+      <span class="nav-icon">🏆</span>Beloningen
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="switchTab('settings', this)">
+      <span class="nav-icon">⚙</span>Taken
+    </button>
+  </nav>
+</div>
+
+<!-- ═══════════════ MODAL: ADD / EDIT TASK ═══════════════ -->
+<div class="modal-overlay" id="task-modal" onclick="onOverlayClick(event,'task-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="task-modal-title">NIEUWE TAAK</div>
+
+    <div class="form-group">
+      <label>Taaknaam</label>
+      <input type="text" id="task-name-input" placeholder="bv. Koude douche nemen" maxlength="60">
+    </div>
+
+    <div class="form-group">
+      <label>Hoe vaak moet je dit doen?</label>
+      <div class="freq-grid">
+        <div class="freq-btn selected" data-days="1" onclick="selectFreq(this)">Elke dag</div>
+        <div class="freq-btn" data-days="2" onclick="selectFreq(this)">Om de<br>2 dagen</div>
+        <div class="freq-btn" data-days="3" onclick="selectFreq(this)">Om de<br>3 dagen</div>
+        <div class="freq-btn" data-days="7" onclick="selectFreq(this)">1x per<br>week</div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('task-modal')">Annuleer</button>
+      <button class="btn-save" onclick="saveTask()">OPSLAAN</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ MODAL: FREEZE ═══════════════ -->
+<div class="modal-overlay" id="freeze-modal" onclick="onOverlayClick(event,'freeze-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">❄️ STREAK FREEZE</div>
+    <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:1rem;font-family:'Space Mono',monospace;line-height:1.7">
+      Kies welke gemiste taak je wil beschermen. Je streak wordt niet gereset voor die taak.
+    </p>
+    <div class="freeze-task-list" id="freeze-task-list"></div>
+    <div style="font-size:0.72rem;font-family:'Space Mono',monospace;color:var(--text-dim);margin-top:0.5rem">
+      Je hebt <span id="freeze-modal-count" style="color:var(--blue);font-weight:700">0</span> freeze(s) beschikbaar.
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('freeze-modal')">Annuleer</button>
+      <button class="btn-save" onclick="applyFreeze()">FREEZE GEBRUIKEN</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  DATA & CONSTANTS
+// ═══════════════════════════════════════════════════
+
+const STORAGE_KEY = 'lockedin_v2_users';
+const SESSION_KEY = 'lockedin_session';
+
+const REWARDS = [
+  { days: 7,   icon: '⭐', name: '1 week streak',    freezeBonus: 1 },
+  { days: 10,  icon: '❄️', name: '10 dag streak',     freezeBonus: 1 },
+  { days: 21,  icon: '💪', name: '21 dagen gewoonte', freezeBonus: 2 },
+  { days: 30,  icon: '🔥', name: '30 dagen op rij',   freezeBonus: 2 },
+  { days: 50,  icon: '⚡', name: '50 DAGEN!!!',       freezeBonus: 3 },
+  { days: 100, icon: '👑', name: 'LEGENDARY 100',     freezeBonus: 5 },
+];
+
+const DEFAULT_TASKS = [
+  { name: 'Koude douche nemen',       freq: 7 },
+  { name: '1 uur studeren',           freq: 1 },
+  { name: 'Slapen zonder te scrollen', freq: 1 },
+  { name: 'Arm workout',              freq: 2 },
+  { name: 'Been workout',             freq: 2 },
+];
+
+let allUsers = {};
+let currentUser = null;
+let editingTaskId = null;
+let selectedFreq = 1;
+
+// ═══════════════════════════════════════════════════
+//  STORAGE HELPERS
+// ═══════════════════════════════════════════════════
+
+function loadAllUsers() {
+  try { allUsers = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch(e) { allUsers = {}; }
+}
+
+function saveAllUsers() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers)); }
+  catch(e) { showToast('⚠️ Opslaan mislukt (opslag vol?)'); }
+}
+
+function getUser() { return allUsers[currentUser]; }
+function saveUser() { saveAllUsers(); }
+
+// ═══════════════════════════════════════════════════
+//  DATE HELPERS
+// ═══════════════════════════════════════════════════
+
+function todayStr() {
+  return localDateStr(new Date());
+}
+
+function localDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function offsetDate(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return localDateStr(d);
+}
+
+function isTaskDueOn(task, dateStr) {
+  if (task.freq === 1) return true;
+  const base = new Date('2024-01-01T00:00:00');
+  const target = new Date(dateStr + 'T00:00:00');
+  const diffDays = Math.round((target - base) / 86400000);
+  return diffDays % task.freq === 0;
+}
+
+function freqLabel(freq) {
+  if (freq === 1) return 'elke dag';
+  if (freq === 7) return '1x per week';
+  return `elke ${freq} dagen`;
+}
+
+function friendlyDate(d) {
+  const days = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+  const months = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+// ═══════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+  });
+  document.getElementById('login-form').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('auth-err').textContent = '';
+}
+
+function setErr(msg) { document.getElementById('auth-err').textContent = msg; }
+
+function doRegister() {
+  const u = document.getElementById('reg-user').value.trim().toLowerCase();
+  const p = document.getElementById('reg-pass').value;
+  if (!u || u.length < 2) return setErr('Naam te kort (min. 2 tekens)');
+  if (!p || p.length < 4) return setErr('Wachtwoord te kort (min. 4 tekens)');
+  loadAllUsers();
+  if (allUsers[u]) return setErr('Gebruikersnaam al in gebruik');
+  allUsers[u] = createNewUser(u, p);
+  saveAllUsers();
+  sessionStorage.setItem(SESSION_KEY, u);
+  currentUser = u;
+  enterApp();
+}
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim().toLowerCase();
+  const p = document.getElementById('login-pass').value;
+  loadAllUsers();
+  if (!allUsers[u]) return setErr('Gebruiker niet gevonden');
+  if (allUsers[u].password !== p) return setErr('Wachtwoord onjuist');
+  sessionStorage.setItem(SESSION_KEY, u);
+  currentUser = u;
+  enterApp();
+}
+
+function doLogout() {
+  if (!confirm('Uitloggen?')) return;
+  currentUser = null;
+  sessionStorage.removeItem(SESSION_KEY);
+  document.getElementById('auth-screen').classList.add('active');
+  document.getElementById('app-screen').classList.remove('active');
+}
+
+function createNewUser(username, password) {
+  return {
+    username,
+    password,
+    tasks: DEFAULT_TASKS.map(t => ({ id: uid(), name: t.name, freq: t.freq, notes: {} })),
+    streak: 0,
+    longestStreak: 0,
+    lastPerfectDay: null,
+    freezes: 0,
+    unlockedRewards: [],
+    completions: {}
+  };
+}
+
+// ═══════════════════════════════════════════════════
+//  APP INIT
+// ═══════════════════════════════════════════════════
+
+function enterApp() {
+  migrateUser();
+  checkDayLogic();
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('app-screen').classList.add('active');
+  renderAll();
+}
+
+function migrateUser() {
+  const u = getUser();
+  if (!u.completions)      u.completions      = {};
+  if (!u.freezes)          u.freezes          = 0;
+  if (!u.unlockedRewards)  u.unlockedRewards  = [];
+  if (!u.longestStreak)    u.longestStreak    = 0;
+  u.tasks.forEach(t => {
+    if (!t.notes) t.notes = {};
+    if (!t.freq)  t.freq  = 1;
+    if (!t.id)    t.id    = uid();
+  });
+  saveUser();
+}
+
+// Called on app open: check if yesterday's tasks were all done to update streak
+function checkDayLogic() {
+  const u = getUser();
+  const today = todayStr();
+  const yesterday = offsetDate(-1);
+
+  if (!u.completions[today]) u.completions[today] = {};
+
+  // Did we already process yesterday?
+  if (u.lastProcessedDay === yesterday) { saveUser(); return; }
+
+  const yesterdayTasks = u.tasks.filter(t => isTaskDueOn(t, yesterday));
+  if (yesterdayTasks.length > 0) {
+    const allDone = yesterdayTasks.every(t => u.completions[yesterday]?.[t.id]);
+    if (allDone) {
+      // Build streak: consecutive perfect days
+      if (u.lastPerfectDay === offsetDate(-2) || u.lastPerfectDay === null && u.streak === 0) {
+        u.streak = (u.streak || 0) + 1;
+      } else if (u.lastPerfectDay !== yesterday) {
+        // check if chain was already counted
+        if (u.lastPerfectDay !== yesterday) u.streak = Math.max(1, (u.streak || 0) + 1);
+      }
+      u.lastPerfectDay = yesterday;
+      u.longestStreak = Math.max(u.longestStreak || 0, u.streak);
+      checkAndGrantRewards();
+    } else {
+      // Streak broken
+      if (u.lastPerfectDay !== yesterday) u.streak = 0;
+    }
+  }
+  u.lastProcessedDay = yesterday;
+  saveUser();
+}
+
+function checkAndGrantRewards() {
+  const u = getUser();
+  REWARDS.forEach(r => {
+    if (u.streak >= r.days && !u.unlockedRewards.includes(r.days)) {
+      u.unlockedRewards.push(r.days);
+      u.freezes = (u.freezes || 0) + r.freezeBonus;
+      setTimeout(() => showToast(`🏆 ${r.name} ontgrendeld! +${r.freezeBonus} freeze${r.freezeBonus > 1 ? 's' : ''}`), 400);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════
+
+function renderAll() {
+  const u = getUser();
+  document.getElementById('user-avatar').textContent = u.username[0].toUpperCase();
+  document.getElementById('today-date-label').textContent = friendlyDate(new Date());
+
+  renderTasks();
+  renderProgress();
+  renderRewards();
+  renderSettings();
+}
+
+function renderTasks() {
+  const u = getUser();
+  const today = todayStr();
+  const container = document.getElementById('tasks-container');
+  const due = u.tasks.filter(t => isTaskDueOn(t, today));
+  const doneCount = due.filter(t => u.completions[today]?.[t.id]).length;
+
+  document.getElementById('tasks-done-count').textContent = `${doneCount}/${due.length} klaar`;
+
+  if (due.length === 0) {
+    container.innerHTML = '<div class="empty-state">Geen taken vandaag 🎉<br>Voeg er een toe hieronder</div>';
+    return;
+  }
+
+  // Sort: not done first, done last
+  const sorted = [...due].sort((a, b) => {
+    const da = u.completions[today]?.[a.id] ? 1 : 0;
+    const db = u.completions[today]?.[b.id] ? 1 : 0;
+    return da - db;
+  });
+
+  container.innerHTML = sorted.map(task => {
+    const status = u.completions[today]?.[task.id];
+    const done   = !!status;
+    const frozen = status === 'frozen';
+    const streak = getTaskStreak(task);
+    const noteToday = task.notes?.[today] || '';
+    const cls = frozen ? 'frozen' : done ? 'done' : '';
+
+    return `
+<div class="task-card ${cls}" id="card-${task.id}">
+  <div class="task-main" onclick="toggleTask('${task.id}')">
+    <div class="task-check">${frozen ? '❄' : done ? '✓' : ''}</div>
+    <div class="task-info">
+      <div class="task-name">${escHtml(task.name)}</div>
+      <div class="task-meta">
+        <span class="pill pill-streak">🔥 ${streak}d</span>
+        <span class="pill pill-freq">${freqLabel(task.freq)}</span>
+        ${frozen ? '<span class="pill pill-frozen">freeze actief</span>' : ''}
+      </div>
+    </div>
+  </div>
+  <div class="task-actions">
+    <button class="task-btn" onclick="toggleNote('${task.id}')">📝 Notitie</button>
+    <button class="task-btn" onclick="openEditTask('${task.id}')">✏️ Bewerk</button>
+    <button class="task-btn danger" onclick="deleteTask('${task.id}')">🗑</button>
+  </div>
+  <div class="note-drawer${noteToday ? ' open' : ''}" id="note-${task.id}">
+    ${noteToday ? `<div class="note-display">${escHtml(noteToday)}</div>` : ''}
+    <textarea class="note-textarea" id="noteinput-${task.id}" placeholder="Schrijf een notitie... (bv. sets, hoe het ging, opmerkingen)">${escHtml(noteToday)}</textarea>
+    <button class="note-save-btn" onclick="saveNote('${task.id}')">Opslaan</button>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function getTaskStreak(task) {
+  const u = getUser();
+  const today = todayStr();
+  let streak = 0;
+
+  // Count backwards from yesterday
+  for (let i = 1; i <= 365; i++) {
+    const ds = offsetDate(-i);
+    if (!isTaskDueOn(task, ds)) continue; // skip days task isn't due
+    if (u.completions[ds]?.[task.id]) { streak++; }
+    else { break; }
+  }
+  // Add today if done
+  if (u.completions[today]?.[task.id]) streak++;
+  return streak;
+}
+
+function renderProgress() {
+  const u = getUser();
+  const streak = u.streak || 0;
+  const longest = u.longestStreak || 0;
+
+  document.getElementById('overall-streak').textContent = streak;
+  document.getElementById('freeze-count').textContent = u.freezes || 0;
+  document.getElementById('longest-streak-label').textContent = `best: ${longest} dag${longest !== 1 ? 'en' : ''}`;
+
+  const next = REWARDS.find(r => r.days > streak);
+  const prev = [...REWARDS].reverse().find(r => r.days <= streak);
+  const fromD = prev ? prev.days : 0;
+  const toD   = next ? next.days : (prev ? prev.days + 1 : 10);
+  const pct   = next ? Math.min(100, ((streak - fromD) / (toD - fromD)) * 100) : 100;
+
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('next-reward-text').textContent =
+    next ? `volgende: ${next.icon} bij ${next.days}d` : '🏆 max bereikt!';
+
+  const unlocked = u.unlockedRewards || [];
+  document.getElementById('milestones-row').innerHTML = REWARDS.slice(0, 5).map(r => {
+    const done = unlocked.includes(r.days);
+    const isNext = next && next.days === r.days;
+    return `<div class="milestone-pill ${done ? 'unlocked' : ''} ${isNext && !done ? 'is-next' : ''}">${r.icon} ${r.days}d</div>`;
+  }).join('');
+}
+
+function renderRewards() {
+  const u = getUser();
+  const unlocked = u.unlockedRewards || [];
+  document.getElementById('rewards-grid').innerHTML = REWARDS.map(r => {
+    const done = unlocked.includes(r.days);
+    return `
+<div class="reward-card${done ? ' unlocked' : ''}">
+  <div class="reward-icon">${r.icon}</div>
+  <div class="reward-name">${r.name}</div>
+  <div class="reward-req">${done ? '✓ Ontgrendeld!' : `${r.days} dagen streak`}</div>
+  <div class="reward-bonus">+${r.freezeBonus} freeze${r.freezeBonus > 1 ? 's' : ''}</div>
+</div>`;
+  }).join('');
+}
+
+function renderSettings() {
+  const u = getUser();
+  document.getElementById('settings-tasks-list').innerHTML = u.tasks.length === 0
+    ? '<div style="padding:1rem;text-align:center;color:var(--text-dim);font-size:0.8rem;font-family:\'Space Mono\',monospace">Nog geen taken</div>'
+    : u.tasks.map((t, i) => `
+<div class="settings-task-item" style="${i === 0 ? '' : ''}">
+  <div class="settings-task-info">
+    <div class="settings-task-name">${escHtml(t.name)}</div>
+    <div class="settings-task-freq">${freqLabel(t.freq)} · streak: ${getTaskStreak(t)}d</div>
+  </div>
+  <button class="task-btn" onclick="openEditTask('${t.id}')">✏️</button>
+  <button class="task-btn danger" onclick="deleteTask('${t.id}')">🗑</button>
+</div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  TASK ACTIONS
+// ═══════════════════════════════════════════════════
+
+function toggleTask(taskId) {
+  const u = getUser();
+  const today = todayStr();
+  if (!u.completions[today]) u.completions[today] = {};
+
+  const wasDone = !!u.completions[today][taskId];
+  if (wasDone) {
+    delete u.completions[today][taskId];
+  } else {
+    u.completions[today][taskId] = true;
+    showToast('✓ Gedaan! Zo gaan! 💪');
+  }
+
+  // Check perfect day
+  const due = u.tasks.filter(t => isTaskDueOn(t, today));
+  const allDone = due.length > 0 && due.every(t => u.completions[today]?.[t.id]);
+  if (allDone && u.lastPerfectDay !== today) {
+    const wasYesterdayPerfect = u.lastPerfectDay === offsetDate(-1);
+    u.streak = wasYesterdayPerfect ? (u.streak || 0) + 1 : 1;
+    u.lastPerfectDay = today;
+    u.longestStreak = Math.max(u.longestStreak || 0, u.streak);
+    checkAndGrantRewards();
+    showToast(`🔥 Perfecte dag! Streak: ${u.streak} dagen!`);
+  } else if (!allDone && u.lastPerfectDay === today) {
+    // Undo perfect day
+    u.lastPerfectDay = offsetDate(-1);
+    u.streak = Math.max(0, (u.streak || 1) - 1);
+  }
+
+  saveUser();
+  renderAll();
+}
+
+function toggleNote(taskId) {
+  document.getElementById('note-' + taskId).classList.toggle('open');
+}
+
+function saveNote(taskId) {
+  const u = getUser();
+  const today = todayStr();
+  const task = u.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  if (!task.notes) task.notes = {};
+  task.notes[today] = document.getElementById('noteinput-' + taskId).value.trim();
+  saveUser();
+  showToast('📝 Notitie opgeslagen');
+  renderTasks();
+}
+
+function deleteTask(taskId) {
+  if (!confirm('Taak verwijderen? Dit kan niet ongedaan worden.')) return;
+  const u = getUser();
+  u.tasks = u.tasks.filter(t => t.id !== taskId);
+  saveUser();
+  renderAll();
+  showToast('🗑 Taak verwijderd');
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+
+function openAddTask() {
+  editingTaskId = null;
+  selectedFreq = 1;
+  document.getElementById('task-name-input').value = '';
+  document.getElementById('task-modal-title').textContent = 'NIEUWE TAAK';
+  document.querySelectorAll('.freq-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.days) === 1);
+  });
+  openModal('task-modal');
+}
+
+function openEditTask(taskId) {
+  const u = getUser();
+  const task = u.tasks.find(t => t.id === taskId);
+  if (!task) return;
+  editingTaskId = taskId;
+  selectedFreq = task.freq;
+  document.getElementById('task-name-input').value = task.name;
+  document.getElementById('task-modal-title').textContent = 'TAAK BEWERKEN';
+  document.querySelectorAll('.freq-btn').forEach(b => {
+    b.classList.toggle('selected', parseInt(b.dataset.days) === task.freq);
+  });
+  openModal('task-modal');
+}
+
+function selectFreq(btn) {
+  selectedFreq = parseInt(btn.dataset.days);
+  document.querySelectorAll('.freq-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function saveTask() {
+  const name = document.getElementById('task-name-input').value.trim();
+  if (!name) return showToast('⚠️ Vul een naam in voor de taak');
+  const u = getUser();
+  if (editingTaskId) {
+    const task = u.tasks.find(t => t.id === editingTaskId);
+    if (task) { task.name = name; task.freq = selectedFreq; }
+    showToast('✏️ Taak bijgewerkt');
+  } else {
+    u.tasks.push({ id: uid(), name, freq: selectedFreq, notes: {} });
+    showToast('+ Taak toegevoegd!');
+  }
+  saveUser();
+  closeModal('task-modal');
+  renderAll();
+}
+
+function openFreezeModal() {
+  const u = getUser();
+  if (!u.freezes || u.freezes <= 0) return showToast('❄️ Geen freezes beschikbaar. Verdien ze via streaks!');
+  const today = todayStr();
+  const notDone = u.tasks.filter(t => isTaskDueOn(t, today) && !u.completions[today]?.[t.id]);
+  if (notDone.length === 0) return showToast('Alle taken zijn al gedaan! Goed bezig 💪');
+
+  document.getElementById('freeze-modal-count').textContent = u.freezes;
+  document.getElementById('freeze-task-list').innerHTML = notDone.map(t => `
+    <label class="freeze-task-radio">
+      <input type="radio" name="freeze-task" value="${t.id}">
+      <span>${escHtml(t.name)}</span>
+    </label>`).join('');
+  openModal('freeze-modal');
+}
+
+function applyFreeze() {
+  const u = getUser();
+  const sel = document.querySelector('input[name="freeze-task"]:checked');
+  if (!sel) return showToast('Kies eerst een taak');
+  if (!u.freezes || u.freezes <= 0) return showToast('Geen freezes meer over');
+  const today = todayStr();
+  if (!u.completions[today]) u.completions[today] = {};
+  u.completions[today][sel.value] = 'frozen';
+  u.freezes--;
+  saveUser();
+  closeModal('freeze-modal');
+  showToast('❄️ Freeze gebruikt! Streak beschermd.');
+
+  // Recheck perfect day after freeze
+  const due = u.tasks.filter(t => isTaskDueOn(t, today));
+  const allDone = due.length > 0 && due.every(t => u.completions[today]?.[t.id]);
+  if (allDone && u.lastPerfectDay !== today) {
+    const wasYesterdayPerfect = u.lastPerfectDay === offsetDate(-1);
+    u.streak = wasYesterdayPerfect ? (u.streak || 0) + 1 : 1;
+    u.lastPerfectDay = today;
+    u.longestStreak = Math.max(u.longestStreak || 0, u.streak);
+    checkAndGrantRewards();
+    saveUser();
+  }
+  renderAll();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function onOverlayClick(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+// ═══════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+
+// ═══════════════════════════════════════════════════
+//  SERVICE WORKER REGISTRATION
+// ═══════════════════════════════════════════════════
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.log('SW registratie mislukt:', err);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  BOOT
+// ═══════════════════════════════════════════════════
+
+loadAllUsers();
+
+// Auto-login from session
+const savedSession = sessionStorage.getItem(SESSION_KEY);
+if (savedSession && allUsers[savedSession]) {
+  currentUser = savedSession;
+  enterApp();
+}
+
+// Enter key support in auth forms
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const loginForm = document.getElementById('login-form');
+  const regForm   = document.getElementById('register-form');
+  if (loginForm.style.display !== 'none') doLogin();
+  else if (regForm.style.display !== 'none') doRegister();
+});
+</script>
+</body>
+</html>
