@@ -52,15 +52,7 @@
   .screen.hidden { display: none !important; }
 
   /* AUTH */
-  #auth-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    min-height: 100vh;
-    background: radial-gradient(ellipse at top, #0f1a00 0%, var(--bg) 60%);
-  }
+  #auth-screen.hidden { display: none !important; }
 
   .auth-logo {
     font-family: 'Bebas Neue', sans-serif;
@@ -757,7 +749,7 @@
 <body>
 
 <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
-<div id="auth-screen" class="screen">
+<div id="auth-screen" class="screen" style="position:fixed;inset:0;z-index:999;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse at top,#0f1a00 0%,#0a0a0a 60%)">
   <div class="auth-logo">LOCKED IN</div>
   <div class="auth-tagline">stay disciplined. stay consistent.</div>
 
