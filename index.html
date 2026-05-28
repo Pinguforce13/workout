@@ -48,8 +48,8 @@
   .mono { font-family: 'Space Mono', monospace; }
 
   /* SCREENS */
-  .screen { display: none; min-height: 100vh; }
-  .screen.active { display: block; }
+  .screen { min-height: 100vh; }
+  .screen.hidden { display: none !important; }
 
   /* AUTH */
   #auth-screen {
@@ -61,7 +61,6 @@
     min-height: 100vh;
     background: radial-gradient(ellipse at top, #0f1a00 0%, var(--bg) 60%);
   }
-  #auth-screen.active { display: flex; }
 
   .auth-logo {
     font-family: 'Bebas Neue', sans-serif;
@@ -163,8 +162,7 @@
   }
 
   /* MAIN APP */
-  #app-screen { display: none; padding-bottom: 80px; }
-  #app-screen.active { display: block; }
+  #app-screen { display: block; padding-bottom: 80px; }
 
   /* HEADER */
   .header {
@@ -759,7 +757,7 @@
 <body>
 
 <!-- ═══════════════ AUTH SCREEN ═══════════════ -->
-<div id="auth-screen" class="screen active">
+<div id="auth-screen" class="screen">
   <div class="auth-logo">LOCKED IN</div>
   <div class="auth-tagline">stay disciplined. stay consistent.</div>
 
@@ -798,7 +796,7 @@
 </div>
 
 <!-- ═══════════════ MAIN APP ═══════════════ -->
-<div id="app-screen" class="screen">
+<div id="app-screen" class="screen hidden">
 
   <!-- Header -->
   <div class="header">
@@ -1088,8 +1086,8 @@ function doLogout() {
   if (!confirm('Uitloggen?')) return;
   currentUser = null;
   sessionStorage.removeItem(SESSION_KEY);
-  document.getElementById('auth-screen').classList.add('active');
-  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('auth-screen').classList.remove('hidden');
+  document.getElementById('app-screen').classList.add('hidden');
 }
 
 function createNewUser(username, password) {
@@ -1113,8 +1111,8 @@ function createNewUser(username, password) {
 function enterApp() {
   migrateUser();
   checkDayLogic();
-  document.getElementById('auth-screen').classList.remove('active');
-  document.getElementById('app-screen').classList.add('active');
+  document.getElementById('auth-screen').classList.add('hidden');
+  document.getElementById('app-screen').classList.remove('hidden');
   renderAll();
 }
 
